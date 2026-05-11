@@ -11,6 +11,7 @@
 #define TOP_N 20            // Kiírandó leggyakoribb szavak száma
 
 //------------------------------------------------------------------------------------------------
+
 // A SZÓ STRUKTÚRÁJA
 
 typedef struct WordNode {               
@@ -41,7 +42,7 @@ HashMap global_map;                     // Globális hash map: ide kerül a vég
 
 // HASH FÜGGVÉNY: szóból számot készít, megmondja melyik bucketbe kerül a szó
 
-unsigned int hash(const char* str) {    // Hash függvény definíció
+unsigned int hash(const char* str) {    // Hash függvény definíció: unsigned: visszatérés csak pozitiv
     unsigned int h = 0;                 // Kezdő hash érték
 
     while (*str) {                      // Amíg nem érjük el a string végét addig
@@ -56,10 +57,10 @@ unsigned int hash(const char* str) {    // Hash függvény definíció
 void hashmap_insert(HashMap* map, const char* word) { // Szó beszúrása a hash mapbe
     unsigned int h = hash(word);        // Hash index kiszámítása
 
-    WordNode* node = map->table[h];     // Az adott bucket első eleme
+    WordNode* node = map->table[h];     // Az adott bucket első eleme, ->: indirekt elérés (mutatón keresztül a struktúra elemére)
 
     while (node) {                      // Láncolt lista bejárása
-        if (strcmp(node->word, word) == 0) { // Ha a szó már létezik
+        if (strcmp(node->word, word) == 0) { // Ha a szó már létezik,  strcmp(): string összehasonlítás; == 0: ha a két szó karakterre pontosan egyezik
             node->count++;              // Növeljük az előfordulás számát
             return;                     // Kilépünk
         }
@@ -71,7 +72,7 @@ void hashmap_insert(HashMap* map, const char* word) { // Szó beszúrása a hash
 
     WordNode* new_node = malloc(sizeof(WordNode)); // Új node foglalása
 
-    strncpy(new_node->word, word, MAX_WORD_LEN); // Szó másolása
+    strncpy(new_node->word, word, MAX_WORD_LEN); // Szó másolása: strncpy(): biztonságos másolás
 
     new_node->word[MAX_WORD_LEN-1] = '\0'; // Biztosítjuk a lezárást
 
@@ -93,16 +94,16 @@ void hashmap_merge(HashMap* dest, HashMap* src) { // Két hashmap összefűzése
 
             pthread_mutex_lock(&global_mutex); // Mutex zárolása: más thread nem írhat
 
-            hashmap_insert(dest, node->word); // Szó beszúrása a cél mapbe
+            hashmap_insert(dest, node->word); // Szó beszúrása a közös táblába
 
-            pthread_mutex_unlock(&global_mutex); // Mutex feloldása
+            pthread_mutex_unlock(&global_mutex); // Mutex feloldása: utat adunk több szálnak
 
             node = node->next;          // jöhet a következő elem
         }
     }
 }
 
-//HASHMAP FREE: felszabadítjuk a memóriát, C-ben nincs külön garbage collector
+//HASHMAP FREE: felszabadítjuk a memóriát, C-ben nincs külön garbage collector, mem. szivárgás megelőzése
 
 void hashmap_free(HashMap* map) {       // Hash map memória felszabadítása
     for (int i = 0; i < HASH_SIZE; ++i) { // Végigmegyünk minden bucketen
@@ -160,7 +161,7 @@ void extract_words(char* buffer, size_t start, size_t end, HashMap* map) {
 
 void* thread_func(void* arg) {          // A thread által futtatott függvény
 
-    ThreadArg* t = (ThreadArg*)arg;     // Argumentum konvertálása
+    ThreadArg* t = (ThreadArg*)arg;     // Argumentum konvertálása, (ThreadArg*): típus kényszerítés
 
     extract_words(t->buffer, t->start, t->end, t->local_map); // Szavak feldolgozása
 
@@ -169,9 +170,9 @@ void* thread_func(void* arg) {          // A thread által futtatott függvény
 
 //COMPARE WORDS: összehasonlítás, qsort használja rendezéshez, nagyobb count előre kerül
 
-int compare_words(const void* a, const void* b) { // qsort összehasonlító függvény
+int compare_words(const void* a, const void* b) { // qsort összehasonlító függvény, void* qsort követelmény
 
-    WordNode* wa = *(WordNode**)a;      // Első elem
+    WordNode* wa = *(WordNode**)a;      // Első elem, * = mutató
 
     WordNode* wb = *(WordNode**)b;      // Második elem
 
@@ -234,7 +235,7 @@ int main(int argc, char* argv[]) {      // Program belépési pontja
 
 //paraméterek feldolgozása
 
-    const char* filename = argv[1];     // Fájlnév eltárolása
+    const char* filename = argv[1];     // Fájlnév eltárolása, mutató a fájlnévre; argv[1]: az első beírt paraméter
 
     int num_threads = atoi(argv[2]);    // // threadek száma stringből intté alakítva
 
@@ -255,11 +256,11 @@ int main(int argc, char* argv[]) {      // Program belépési pontja
 
     stat(filename, &st);                // Fájl adatainak lekérdezése
 
-    size_t filesize = st.st_size;       // Fájlméret eltárolása
+    size_t filesize = st.st_size;       // Fájlméret eltárolása, st_size: a fájl mérete bájtokban
 
 //fájl beolvasása memóriába
 
-    char* buffer = malloc(filesize + 1); // Memória foglalása a fájl tartalmának
+    char* buffer = malloc(filesize + 1); // Memória foglalása a fájl tartalmának, +1 a \0 nak
 
     fread(buffer, 1, filesize, f);      // Fájl beolvasása memóriába
 
@@ -295,7 +296,7 @@ int main(int argc, char* argv[]) {      // Program belépési pontja
 
         args[i].local_map = &local_maps[i]; // Lokális hashmap hozzárendelése
 
-        memset(&local_maps[i], 0, sizeof(HashMap)); // Hashmap nullázása
+        memset(&local_maps[i], 0, sizeof(HashMap)); // Hashmap nullázása, a tábla tiszta legyen indításkor
 
         pthread_create(&threads[i], NULL, thread_func, &args[i]); // Thread indítása
     }
@@ -304,7 +305,7 @@ int main(int argc, char* argv[]) {      // Program belépési pontja
 
     for (int i = 0; i < num_threads; ++i) { // Threadek befejezésére várunk
 
-        pthread_join(threads[i], NULL); // Thread lezárásának megvárása
+        pthread_join(threads[i], NULL); // Thread lezárásának megvárása, pthread_join(): szinkronizáció; megvárjuk, amíg az i-edik szál végez
 
         hashmap_merge(&global_map, &local_maps[i]); // Lokális map összevonása
 
@@ -315,7 +316,7 @@ int main(int argc, char* argv[]) {      // Program belépési pontja
 
     clock_t end_time = clock();         // End idő mérése
 
-    double time_spent = (double)(end_time - start_time) / CLOCKS_PER_SEC; // Futási idő számítása
+    double time_spent = (double)(end_time - start_time) / CLOCKS_PER_SEC; // Futási idő számítása, CLOCKS_PER_SEC: váltószám
 
 //eredmény kiírás
 
@@ -324,7 +325,7 @@ int main(int argc, char* argv[]) {      // Program belépési pontja
         print_top_words(&global_map);   // Leggyakoribb szavak kiírása
     }
 
-    printf("%.3f\n", time_spent);       // Futási idő kiírása
+    printf("%.3f\n", time_spent);       // Futási idő kiírása, tizedes tört kiírása 3 tizedes jegyig
 
 //hashmap free és vége
 
