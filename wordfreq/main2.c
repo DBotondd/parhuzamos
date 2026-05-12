@@ -23,7 +23,7 @@ typedef struct WordNode {
 // MAGA A HASHTÁBLA 
 
 typedef struct {                        
-    WordNode* table[HASH_SIZE];         // Hash tábla pointerekkel
+    WordNode* table[HASH_SIZE];         // Hash tábla pointerekkel,  a tábla indexeit tároló
 } HashMap;                              
 
 // THREAD PARAMÉTEREK: milyen szövegrészt dolgozzon fel, melyik hashmapbe írjon
@@ -127,7 +127,7 @@ void hashmap_free(HashMap* map) {       // Hash map memória felszabadítása
 //SZAVAK KINYERÉSE: ha betű építjük tovább a szót, ha nem akkor lezárjuk, eltároljuk 
 
 void extract_words(char* buffer, size_t start, size_t end, HashMap* map) { 
-    char word[MAX_WORD_LEN];            // Ideiglenes szó buffer: ide építjük 
+    char word[MAX_WORD_LEN];            // Ideiglenes szó buffer: ide építjük a szót
 
     int idx = 0;                        // Aktuális szó karakter indexe
 
