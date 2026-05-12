@@ -37,7 +37,7 @@ typedef struct {
 
 //----------------------------------------------------------------------------------------------------
 
-pthread_mutex_t global_mutex = PTHREAD_MUTEX_INITIALIZER; // Mutex: egyszerre csak egy thread írhat a globális mapbe
+pthread_mutex_t global_mutex = PTHREAD_MUTEX_INITIALIZER; // Mutex: egyszerre csak egy thread írhat a globális mapbe (adatverseny)
 HashMap global_map;                     // Globális hash map: ide kerül a végső összesített eredmény
 
 // HASH FÜGGVÉNY: szóból számot készít, megmondja melyik bucketbe kerül a szó
@@ -205,7 +205,7 @@ void print_top_words(HashMap* map) {    // Leggyakoribb szavak kiírása
 
     for (int i = 0; i < TOP_N && i < count; ++i) { // Top szavak kiírása
 
-        printf("%s: %d\n", list[i]->word, list[i]->count); // Szó és darabszám
+        printf("%s: %d\n", list[i]->word, list[i]->count); // Szó és darabszám, %s: string (szó); %d: egész (darabszám)
     }
 }
 
