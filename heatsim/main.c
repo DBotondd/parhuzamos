@@ -97,9 +97,6 @@ int main(int argc, char* argv[]) { // argc: paraméterek száma; argv: paraméte
     double start = omp_get_wtime(); // omp_get_wtime: "falóra" idő, másodpercben adja vissza a pontos időt
     jacobi_iteration(current, next, N, iterations, threads, schedule, chunk_size); // Fő számítási blokk
     double end = omp_get_wtime();   // mérés vége
-
-
-
     double elapsed = end - start;   // kivonás: megkapjuk a futási időt
     printf("Time taken with %d threads (%s): %.6f seconds\n", threads, sched_type_str, elapsed);
 
@@ -113,7 +110,7 @@ int main(int argc, char* argv[]) { // argc: paraméterek száma; argv: paraméte
         fclose(f);                  // fclose: fájl lezárása és puffer ürítése a lemezre
     }
 
-    
+
 
     free(current); // free: a malloc-al foglalt memória felszabadítása (visszaadjuk a rendszernek)
     free(next);    // felszabadítás a memóriaszivárgás megelőzésére
