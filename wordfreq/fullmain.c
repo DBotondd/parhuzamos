@@ -58,7 +58,8 @@ void hashmap_insert(HashMap* map, const char* word) { // Szó beszúrása a hash
     unsigned int h = hash(word);        // Hash index kiszámítása
 
     WordNode* node = map->table[h];     // Az adott bucket első eleme, ->: indirekt elérés (mutatón keresztül a struktúra elemére)
-
+// egyből a lista elejére visz azért fontos
+    
     while (node) {                      // Láncolt lista bejárása
         if (strcmp(node->word, word) == 0) { // Ha a szó már létezik,  strcmp(): string összehasonlítás; == 0: ha a két szó karakterre pontosan egyezik
             node->count++;              // Növeljük az előfordulás számát
