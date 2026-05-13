@@ -5,7 +5,7 @@
 #include <vector>    // std::vector használata az rács tárolásához
 
 // Sejtállapot konstansok
-constexpr int ALIVE = 1; // élő sejt értéke
+constexpr int ALIVE = 1; // élő sejt értéke, érték fix forditás során véglegesedik
 constexpr int DEAD = 0;  // halott sejt értéke
 
 // Grid típus alias: egydimenziós vektor int-ekből, sorfolytonos rács reprezentációhoz
