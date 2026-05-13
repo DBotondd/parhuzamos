@@ -124,7 +124,7 @@ void hashmap_free(HashMap* map) {       // Hash map memória felszabadítása
 
         while (node) {                  // Lista bejárása
 
-            WordNode* tmp = node;       // Ideiglenes pointer eltárolása
+            WordNode* tmp = node;       // Ideiglenes pointer eltárolása, use after free hiba
 
             node = node->next;          // Továbblépünk
 
