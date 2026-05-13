@@ -48,7 +48,8 @@ void jacobi_iteration(double* current, double* next, int N,
         } // párhuzamosított ciklus vége
 
         // Pointer csere (Swap): nem másolunk adatot, csak a mutatók címét cseréljük fel
-        double* temp = current; // temp: ideiglenes mentés a címnek
+        double* temp = current; // temp: ideiglenes mentés a címnek, megakadályozza, hogy az egyik mátrix címe elveszszen,
+         //miközben a mutatókat átállítjuk a következő számítási körhöz.
         current = next;         // az eddigi "következő" állapot lesz az alapja az újabb körnek
         next = temp;            // a régi állapot helyére írjuk majd a következő eredményt
     }
@@ -67,7 +68,7 @@ int main(int argc, char* argv[]) { // argc: paraméterek száma; argv: paraméte
     }
 
     // Paraméterek feldolgozása
-    int N = atoi(argv[1]);          // atoi: karakterláncból egész számot csinál (mátrix méret)
+    int N = atoi(argv[1]);          // atoi: karakterláncból egész számot csinál (mátrix méret), szamitogepnek egesz szamra van szuksege
     int iterations = atoi(argv[2]); // iterációk száma
     int threads = atoi(argv[3]);    // használandó szálak száma
     char* sched_type_str = argv[4]; // ütemezési mód neve szövegként
@@ -85,7 +86,8 @@ int main(int argc, char* argv[]) { // argc: paraméterek száma; argv: paraméte
 
     // Memória foglalása
     // malloc: memóriafoglalás a heap-en; sizeof(double): egy szám mérete bájtokban; N*N: összes elem
-    double* current = (double*)malloc(N * N * sizeof(double)); // (double*): kényszerített típusátalakítás (cast)
+    double* current = (double*)malloc(N * N * sizeof(double)); // (double*): kényszerített típusátalakítás (cast), malloc tipus nélküli mutatót tárol
+    // ezért kell átalakitani hogy a fordito tudja mit fogunk tárolni
     double* next = (double*)malloc(N * N * sizeof(double));    // puffer a számítások eredményének
     if (!current || !next) {       // hibakezelés: ha elfogyott a RAM, a malloc NULL-t ad vissza
         fprintf(stderr, "Nem sikerült memóriát lefoglalni.\n"); // stderr: hiba-adatfolyam
