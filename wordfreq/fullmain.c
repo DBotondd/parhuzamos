@@ -70,17 +70,28 @@ void hashmap_insert(HashMap* map, const char* word) { // Szó beszúrása a hash
 
 //Idáig akkor jutunk ha a szó még nem létezik
 
-    WordNode* new_node = malloc(sizeof(WordNode)); // Új node foglalása
+   // Új WordNode struktúra létrehozása és memóriafoglalás a heap-en
+// A malloc lefoglal egy WordNode méretű területet, a new_node mutató pedig erre a címre fog mutatni
+    WordNode* new_node = malloc(sizeof(WordNode)); 
 
-    strncpy(new_node->word, word, MAX_WORD_LEN); // Szó másolása: strncpy(): biztonságos másolás
+// A 'word' változóban lévő karakterláncot átmásoljuk az új node 'word' mezőjébe
+// Az strncpy biztonságos, mert maximum MAX_WORD_LEN karaktert másol, így nem ír túl a memórián
+    strncpy(new_node->word, word, MAX_WORD_LEN); 
 
-    new_node->word[MAX_WORD_LEN-1] = '\0'; // Biztosítjuk a lezárást
+// Kényszerített lezárás: ha a szó pontosan MAX_WORD_LEN hosszú, az strncpy nem tenné ki a lezáró nullát
+// Ez a sor garantálja, hogy a sztring végén mindig ott legyen a '\0', így nem lesz memóriahiba olvasáskor
+    new_node->word[MAX_WORD_LEN - 1] = '\0'; 
 
-    new_node->count = 1;                // Első előfordulás
+// Mivel ez egy teljesen új szó a táblázatban, a számlálóját 1-re állítjuk (ez az első alkalom, hogy láttuk)
+    new_node->count = 1; 
 
-    new_node->next = map->table[h];     // Beszúrás a lista elejére
+// LANCOLÁS: Az új elem 'next' mutatóját rákötjük a hash tábla adott indexén lévő eddigi első elemre
+// Ez biztosítja, hogy ha már voltak elemek ebben a "vödörben" (bucket), azok ne vesszenek el, hanem az új után kerüljenek
+    new_node->next = map->table[h]; 
 
-    map->table[h] = new_node;           // Új elem lesz az első
+// A hash tábla adott indexére (h) most már az új elemet állítjuk be kezdőpontként
+// Ezzel az új node vált a láncolt lista legelső elemévé (LIFO elv: Last In, First Out)
+    map->table[h] = new_node;
 }
 
 //HASHMAP EGYESÍTÉS: minden szál külön hashmapben dolgozik végén ezeket egyesíteni kell globálba
@@ -290,9 +301,10 @@ int main(int argc, char* argv[]) {      // Program belépési pontja
 
         args[i].buffer = buffer;        // Buffer pointer beállítása
 
-        args[i].start = i * chunk;      // Kezdő index
+        args[i].start = i * chunk;      // Kezdő index, adott szál számára kijelölt adatblokk kezdete a memóriában
 
-        args[i].end = (i == num_threads - 1) ? filesize : (i + 1) * chunk; // Záró index
+        args[i].end = (i == num_threads - 1) ? filesize : (i + 1) * chunk; // Záró index, ha az utolsó szálról van szó, 
+        //akkor a fájl legvégéig (filesize) jelöli ki a határt, minden más esetben pedig a következő blokk kezdetéig.
 
         args[i].local_map = &local_maps[i]; // Lokális hashmap hozzárendelése
 

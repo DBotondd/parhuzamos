@@ -1,44 +1,77 @@
-//A Conway-féle életjáték CPU-s implementációja: rács inicializálása, szomszédszámlálás és egy iteráció végrehajtása.
-#include "conway.h"          // Grid típus és ALIVE/DEAD konstansok definiálva
-#include <random>             // véletlenszám-generátor használata
+// A Conway-féle életjáték CPU-s implementációja: rács inicializálása, szomszédszámlálás és egy iteráció végrehajtása.
 
-// A rács véletlenszerű inicializálása élő és halott sejtekre
+#include "conway.h"          // Saját fejléc: Grid típus (std::vector) és ALIVE (1) / DEAD (0) konstansok
+#include <random>             // Modern C++ véletlenszám-generátor könyvtár
+
+//------------------------------------------------------------------------------------------------
+
+// RÁCS INICIALIZÁLÁSA: A kezdőállapot véletlenszerű generálása
+
 void initialize_grid(Grid& grid, int width, int height) {
-    std::mt19937 rng(42);                   // Mersenne Twister RNG rögzített seed-del (reprodukálható eredmény)
-    std::uniform_int_distribution<> dist(0, 1);  // Egyenletes eloszlás 0 és 1 között
+    // mt19937: Mersenne Twister generátor; 42: fix kezdőérték (seed), hogy minden futtatáskor ugyanazt a mintát kapjuk
+    std::mt19937 rng(42); 
+    
+    // uniform_int_distribution: Meghatározza a tartományt; 0 vagy 1 értéket fogunk kapni egyenlő eséllyel
+    std::uniform_int_distribution<> dist(0, 1); 
 
-    // Minden cellára generálunk 0 vagy 1 értéket
-    for (int i = 0; i < width * height; ++i)
-        grid[i] = dist(rng);               // 0: DEAD, 1: ALIVE
+    // Végigmegyünk a teljes rácson (szélesség * magasság összesen)
+    for (int i = 0; i < width * height; ++i) {
+        // Minden cellát véletlenszerűen beállítunk élőre (1) vagy halottra (0)
+        grid[i] = dist(rng); 
+    }
 }
 
-// Szomszédok számolása toroid (donut) peremkezeléssel
+//------------------------------------------------------------------------------------------------
+
+// SZOMSZÉDOK SZÁMOLÁSA: Megnézzük, hány élő sejt van egy adott cella körül
+
 int count_neighbors(const Grid& grid, int x, int y, int width, int height) {
-    int count = 0;
-    // dx, dy = -1, 0, 1 kombinációi, kivéve (0,0) – a saját cellát kihagyjuk
-    for (int dx = -1; dx <= 1; ++dx)
+    int count = 0; // Itt gyűjtjük az élő szomszédokat
+
+    // Két egymásba ágyazott ciklus (-1, 0, 1 eltolásokkal) bejárja a 3x3-as környezetet
+    for (int dx = -1; dx <= 1; ++dx) {
         for (int dy = -1; dy <= 1; ++dy) {
-            if (dx == 0 && dy == 0) continue;  // ne számoljuk magát a cellát
-            // peremeken átlépés: modulo művelet segítségével wrap-around
+            
+            // Ha dx és dy is 0, akkor az a középső cella (saját magunk) – ezt nem számoljuk szomszédnak
+            if (dx == 0 && dy == 0) continue; 
+
+            // TOROID KEZELÉS (Fánk forma): Ha kilépnénk a szélen, a túlsó oldalon jövünk vissza
+            // A modulo (%) művelet biztosítja, hogy az index mindig 0 és (szélesség-1) között maradjon
             int nx = (x + dx + width) % width;
             int ny = (y + dy + height) % height;
-            count += grid[ny * width + nx];    // ALIVE=1, DEAD=0, így egyszerű összeadás
+
+            // Mivel ALIVE = 1 és DEAD = 0, az érték hozzáadása pont az élő sejteket számolja meg
+            count += grid[ny * width + nx]; 
         }
-    return count;  // élő szomszédok száma
+    }
+    return count; // Visszaadjuk az élő szomszédok számát (0 és 8 között)
 }
 
-// Egy iteráció végrehajtása a CPU-n
+//------------------------------------------------------------------------------------------------
+
+// SZIMULÁCIÓS LÉPÉS (CPU): A szabályok alkalmazása minden egyes cellára
+
 void step_cpu(const Grid& current, Grid& next, int width, int height) {
-    // minden sor és oszlop bejárása
-    for (int y = 0; y < height; ++y)
+    
+    // Kétdimenziós bejárás: minden soron (y) és minden oszlopon (x) végigmegyünk
+    for (int y = 0; y < height; ++y) {
         for (int x = 0; x < width; ++x) {
+            
+            // Kiszámoljuk az aktuális cella szomszédait
             int neighbors = count_neighbors(current, x, y, width, height);
-            int idx = y * width + x;             // lineáris index a rácsban
-            if (current[idx] == ALIVE)
-                // ha élő sejt, 2 vagy 3 szomszéd esetén életben marad, különben meghal
+            
+            // Kiszámoljuk a cella pontos helyét (indexét) az egydimenziós vektorban
+            int idx = y * width + x; 
+
+            // CONWAY SZABÁLYAI:
+            if (current[idx] == ALIVE) {
+                // TÚLÉLÉS: Ha élő sejtnek 2 vagy 3 szomszédja van, életben marad, különben (magány vagy túlnépesedés) meghal
                 next[idx] = (neighbors == 2 || neighbors == 3) ? ALIVE : DEAD;
-            else
-                // ha halott és pontosan 3 élő szomszéd, újraéled
+            } 
+            else {
+                // SZÜLETÉS: Ha egy halott cellának pontosan 3 élő szomszédja van, "kikel" és élő lesz
                 next[idx] = (neighbors == 3) ? ALIVE : DEAD;
+            }
         }
+    }
 }
