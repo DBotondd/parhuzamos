@@ -312,6 +312,7 @@ int main(int argc, char* argv[]) {      // Program belépési pontja
         memset(&local_maps[i], 0, sizeof(HashMap)); // Hashmap nullázása, a tábla tiszta legyen indításkor
 
         pthread_create(&threads[i], NULL, thread_func, &args[i]); // Thread indítása
+        // parhuzamositas
     }
 
 //threadek megvárása és mergelés
