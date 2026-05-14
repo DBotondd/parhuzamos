@@ -174,7 +174,7 @@ void extract_words(char* buffer, size_t start, size_t end, HashMap* map) {
 void* thread_func(void* arg) {          // A thread által futtatott függvény
 
     ThreadArg* t = (ThreadArg*)arg;     // Argumentum konvertálása, (ThreadArg*): típus kényszerítés
-
+//void pointereket threadarg pointerkent kezelje 
     extract_words(t->buffer, t->start, t->end, t->local_map); // Szavak feldolgozása
 
     pthread_exit(NULL);                 // Szál befejezése
@@ -195,7 +195,7 @@ int compare_words(const void* a, const void* b) { // qsort összehasonlító fü
 
 void print_top_words(HashMap* map) {    // Leggyakoribb szavak kiírása
 
-    WordNode* list[TOP_N * 10];         // Ideiglenes lista: node pointerek gyűjtése
+    WordNode* list[TOP_N * 10];         // Ideiglenes lista: node pointerek gyűjtése, hashmapet nem tudja rendezni, tömböt vár
 
     int count = 0;                      // Elemek száma
 
