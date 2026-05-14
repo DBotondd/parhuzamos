@@ -71,7 +71,7 @@ int main() {            // int: visszatérési típus; main: a program belépés
 
         // EREDMÉNYEK MENTÉSE CSV FÁJLBA
         std::ofstream out("../results.csv", std::ios::app); // std::ios::app: hozzáfűzés (nem törli a régit)
-        
+        //ofstream out fájlba író dokumentumot csinál 
         if (out.is_open()) {
             // Adatok beírása: Méret, CPU idő, GPU kernel idő, Másolási idő
             out << size << "," << cpu_time << "," << kernel_time << "," << memcpy_time << "\n"; 
