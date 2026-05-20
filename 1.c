@@ -8,6 +8,7 @@ mérj időt */
 #include <omp.h>
 #include <stdlib.h>
 
+//CSOMAGOT ADD FEL
 #define N 10000
 
 int main () {
